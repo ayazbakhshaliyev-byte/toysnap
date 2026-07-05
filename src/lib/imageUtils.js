@@ -24,15 +24,17 @@ export async function prepareImageForUpload(file) {
   }
 
   const full = await imageCompression(workingFile, {
-    maxWidthOrHeight: 1920,
-    maxSizeMB: 1.5,
+    maxWidthOrHeight: 2048,
+    maxSizeMB: 2.5,
+    initialQuality: 0.88,
     useWebWorker: true,
     fileType: "image/jpeg",
   });
 
   const thumbnail = await imageCompression(workingFile, {
-    maxWidthOrHeight: 480,
-    maxSizeMB: 0.15,
+    maxWidthOrHeight: 720,
+    maxSizeMB: 0.4,
+    initialQuality: 0.85,
     useWebWorker: true,
     fileType: "image/jpeg",
   });
