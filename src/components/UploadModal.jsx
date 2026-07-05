@@ -82,7 +82,6 @@ export default function UploadModal({ event, guest, onClose, onUploaded }) {
           ref={fileInputRef}
           type="file"
           accept="image/*,.heic,.heif"
-          capture="environment"
           className="hidden"
           onChange={handleFileChange}
         />
