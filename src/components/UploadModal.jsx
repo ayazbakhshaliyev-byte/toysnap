@@ -1,12 +1,15 @@
 import { useRef, useState } from "react";
-import { prepareImageForUpload } from "../lib/imageUtils";
+import { prepareImageForUpload, extensionForFile } from "../lib/imageUtils";
 import { supabase, PHOTOS_BUCKET } from "../lib/supabaseClient";
+
+const CAPTION_LIMIT = 200;
 
 export default function UploadModal({ event, guest, onClose, onUploaded }) {
   const fileInputRef = useRef(null);
   const [preview, setPreview] = useState(null);
   const [file, setFile] = useState(null);
-  const [status, setStatus] = useState("idle"); // idle | processing | uploading | done | error
+  const [caption, setCaption] = useState("");
+  const [status, setStatus] = useState("idle");
   const [errorMsg, setErrorMsg] = useState(null);
 
   function handlePick() {
@@ -25,13 +28,14 @@ export default function UploadModal({ event, guest, onClose, onUploaded }) {
     setStatus("processing");
     setErrorMsg(null);
     try {
-      const { full, thumbnail } = await prepareImageForUpload(file);
+      const { full, thumbnail, original } = await prepareImageForUpload(file);
 
       setStatus("uploading");
       const stamp = Date.now();
       const base = `${event.code}/${guest.id}/${stamp}`;
       const fullPath = `${base}.jpg`;
       const thumbPath = `${base}_thumb.jpg`;
+      const originalPath = `${base}_original.${extensionForFile(original)}`;
 
       const { error: fullErr } = await supabase.storage
         .from(PHOTOS_BUCKET)
@@ -43,6 +47,11 @@ export default function UploadModal({ event, guest, onClose, onUploaded }) {
         .upload(thumbPath, thumbnail, { contentType: "image/jpeg" });
       if (thumbErr) throw thumbErr;
 
+      const { error: originalErr } = await supabase.storage
+        .from(PHOTOS_BUCKET)
+        .upload(originalPath, original, { contentType: original.type || "image/jpeg" });
+      if (originalErr) throw originalErr;
+
       const { data: photoRow, error: insertErr } = await supabase
         .from("photos")
         .insert({
@@ -50,6 +59,8 @@ export default function UploadModal({ event, guest, onClose, onUploaded }) {
           guest_id: guest.id,
           image_path: fullPath,
           thumbnail_path: thumbPath,
+          original_path: originalPath,
+          caption: caption.trim() || null,
         })
         .select("*, guests(full_name)")
         .single();
@@ -70,7 +81,7 @@ export default function UploadModal({ event, guest, onClose, onUploaded }) {
 
   return (
     <div className="fixed inset-0 bg-slate/40 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 p-0 sm:p-6">
-      <div className="w-full sm:max-w-md bg-ivory rounded-t-2xl sm:rounded-2xl p-6 animate-fade-up">
+      <div className="w-full sm:max-w-md bg-ivory rounded-t-2xl sm:rounded-2xl p-6 animate-fade-up max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-5">
           <h2 className="font-serif italic text-2xl text-slate">Поделиться моментом</h2>
           <button onClick={onClose} className="text-slate/40 text-2xl leading-none px-2">
@@ -99,8 +110,23 @@ export default function UploadModal({ event, guest, onClose, onUploaded }) {
 
         {preview && (
           <div className="space-y-4">
-            <div className="rounded-xl overflow-hidden aspect-square bg-warm-beige">
-              <img src={preview} alt="Предпросмотр" className="w-full h-full object-cover" />
+            <div className="rounded-xl overflow-hidden bg-warm-beige">
+              <img src={preview} alt="Предпросмотр" className="w-full h-auto max-h-80 object-contain mx-auto" />
+            </div>
+
+            <div>
+              <textarea
+                value={caption}
+                onChange={(e) => setCaption(e.target.value.slice(0, CAPTION_LIMIT))}
+                placeholder="Подпись к фото (необязательно) — пожелание, момент, шутка…"
+                rows={2}
+                className="w-full px-4 py-3 rounded-lg bg-warm-beige border border-champagne
+                           font-sans text-sm text-slate placeholder:text-slate/40 resize-none
+                           focus:outline-none focus:ring-2 focus:ring-dusty-rose/50 transition"
+              />
+              <p className="text-right text-xs text-slate/30 mt-1">
+                {caption.length}/{CAPTION_LIMIT}
+              </p>
             </div>
 
             {errorMsg && <p className="text-sm text-dusty-rose text-center">{errorMsg}</p>}
