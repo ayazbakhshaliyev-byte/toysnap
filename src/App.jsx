@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import EventGate from "./pages/EventGate";
 import WinnerGate from "./pages/WinnerGate";
+import GuestProfile from "./pages/GuestProfile";
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminQR from "./pages/admin/AdminQR";
 
@@ -20,6 +21,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/event/:code" element={<EventGate />} />
+        <Route path="/event/:code/guest/:guestId" element={<GuestProfile />} />
         <Route path="/event/:code/winner" element={<WinnerGate />} />
         <Route path="/admin/:code" element={<AdminLogin />} />
         <Route path="/admin/:code/qr" element={<AdminQR />} />
