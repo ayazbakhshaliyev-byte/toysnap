@@ -11,6 +11,7 @@ import imageCompression from "browser-image-compression";
  */
 export async function prepareImageForUpload(file) {
   let workingFile = file;
+  let convertedFromHeic = false;
 
   const isHeic =
     file.type === "image/heic" ||
@@ -19,9 +20,24 @@ export async function prepareImageForUpload(file) {
 
   if (isHeic) {
     const heic2any = (await import("heic2any")).default;
-    const converted = await heic2any({ blob: file, toType: "image/jpeg", quality: 0.9 });
+    const converted = await heic2any({ blob: file, toType: "image/jpeg", quality: 0.97 });
     workingFile = new File([converted], "photo.jpg", { type: "image/jpeg" });
+    convertedFromHeic = true;
   }
+
+  // Оригинал для скачивания:
+  // — если исходник уже был в обычном формате (JPEG/PNG/…), используем его как есть,
+  //   без единого изменения — то, что снял гость, то и скачает.
+  // — если исходник был HEIC (iPhone), берём максимально качественный JPEG
+  //   без уменьшения разрешения — открывается везде, разница на глаз незаметна.
+  const original = convertedFromHeic
+    ? await imageCompression(workingFile, {
+        maxSizeMB: 30,
+        initialQuality: 0.97,
+        useWebWorker: true,
+        fileType: "image/jpeg",
+      })
+    : file;
 
   const full = await imageCompression(workingFile, {
     maxWidthOrHeight: 3200,
@@ -39,5 +55,15 @@ export async function prepareImageForUpload(file) {
     fileType: "image/jpeg",
   });
 
-  return { full, thumbnail };
+  return { full, thumbnail, original };
+}
+
+export function extensionForFile(file) {
+  const map = {
+    "image/jpeg": "jpg",
+    "image/png": "png",
+    "image/webp": "webp",
+    "image/gif": "gif",
+  };
+  return map[file.type] || "jpg";
 }
