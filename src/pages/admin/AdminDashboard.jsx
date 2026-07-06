@@ -31,9 +31,11 @@ export default function AdminDashboard({ event, onSignOut }) {
     load();
   }
 
-  async function deletePhoto(photo) {
+async function deletePhoto(photo) {
     if (!confirm("Удалить это фото безвозвратно?")) return;
-    await supabase.storage.from("wedding-photos").remove([photo.image_path, photo.thumbnail_path]);
+    await supabase.storage
+      .from("wedding-photos")
+      .remove([photo.image_path, photo.thumbnail_path, photo.original_path].filter(Boolean));
     await supabase.from("photos").delete().eq("id", photo.id);
     load();
   }
