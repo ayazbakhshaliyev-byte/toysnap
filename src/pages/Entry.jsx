@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { validateGuestName } from "../lib/nameValidation";
 
 export default function Entry({ event, onSubmit }) {
   const [name, setName] = useState("");
@@ -10,10 +11,17 @@ export default function Entry({ event, onSubmit }) {
   async function handleSubmit(e) {
     e.preventDefault();
     if (!canSubmit) return;
+
+    const check = validateGuestName(name);
+    if (!check.valid) {
+      setError(check.reason);
+      return;
+    }
+
     setSubmitting(true);
     setError(null);
     try {
-      await onSubmit(name);
+      await onSubmit(name.trim());
     } catch (err) {
       setError("Не получилось сохранить имя. Попробуйте ещё раз.");
       setSubmitting(false);
@@ -42,12 +50,18 @@ export default function Entry({ event, onSubmit }) {
               autoFocus
               type="text"
               value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Александр Смирнов"
+              onChange={(e) => {
+                setName(e.target.value);
+                if (error) setError(null);
+              }}
+              placeholder="Alexander Smith"
               className="w-full h-14 px-4 rounded-lg bg-warm-beige border border-champagne
                          font-sans text-slate placeholder:text-slate/30
                          focus:outline-none focus:ring-2 focus:ring-dusty-rose/50 transition"
             />
+            <p className="mt-2 text-xs text-slate/40 font-sans">
+              Только латиница (английские или азербайджанские буквы)
+            </p>
           </div>
 
           {error && <p className="text-sm text-dusty-rose text-center">{error}</p>}
