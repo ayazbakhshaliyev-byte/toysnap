@@ -2,11 +2,13 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { publicPhotoUrl, supabase, PHOTOS_BUCKET } from "../lib/supabaseClient";
 import HeartIcon from "./HeartIcon";
+import DownloadIcon from "./DownloadIcon";
 
 export default function PhotoCard({ photo, currentGuestId, eventCode, onLikeToggled, onDeleted }) {
   const [busy, setBusy] = useState(false);
   const [popped, setPopped] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [downloading, setDownloading] = useState(false);
   const isMine = photo.guest_id === currentGuestId;
 
   async function toggleLike() {
@@ -23,9 +25,32 @@ export default function PhotoCard({ photo, currentGuestId, eventCode, onLikeTogg
         setTimeout(() => setPopped(false), 400);
       }
     } catch (e) {
-      // тихо игнорируем гонки (например, двойной клик) — счётчик подтянется реалтаймом
+      // тихо игнорируем гонки — счётчик подтянется реалтаймом
     } finally {
       setBusy(false);
+    }
+  }
+
+  async function handleDownload() {
+    if (downloading) return;
+    setDownloading(true);
+    try {
+      const url = publicPhotoUrl(photo.original_path || photo.image_path);
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      const ext = (photo.original_path || photo.image_path || "").split(".").pop() || "jpg";
+      const link = document.createElement("a");
+      link.href = objectUrl;
+      link.download = `photo-vote-${photo.id.slice(0, 8)}.${ext}`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(objectUrl);
+    } catch (e) {
+      alert("Не получилось скачать фото. Попробуйте ещё раз.");
+    } finally {
+      setDownloading(false);
     }
   }
 
@@ -36,7 +61,7 @@ export default function PhotoCard({ photo, currentGuestId, eventCode, onLikeTogg
     try {
       await supabase.storage
         .from(PHOTOS_BUCKET)
-        .remove([photo.image_path, photo.thumbnail_path].filter(Boolean));
+        .remove([photo.image_path, photo.thumbnail_path, photo.original_path].filter(Boolean));
       await supabase.from("photos").delete().eq("id", photo.id);
       onDeleted?.(photo.id);
     } catch (e) {
@@ -64,10 +89,19 @@ export default function PhotoCard({ photo, currentGuestId, eventCode, onLikeTogg
             {photo.guests?.full_name || "Гость"}
             {isMine && <span className="text-sage"> · вы</span>}
           </Link>
+        </div>
+
+        {photo.caption && (
+          <p className="mt-1.5 text-sm text-slate/80 font-sans leading-snug break-words">
+            {photo.caption}
+          </p>
+        )}
+
+        <div className="mt-2.5 flex items-center gap-4">
           <button
             onClick={toggleLike}
             disabled={busy}
-            className={`flex items-center gap-1.5 shrink-0 ${
+            className={`flex items-center gap-1.5 ${
               photo.liked_by_me ? "text-dusty-rose" : "text-slate/40"
             }`}
             aria-label="Поставить лайк"
@@ -75,16 +109,26 @@ export default function PhotoCard({ photo, currentGuestId, eventCode, onLikeTogg
             <HeartIcon active={photo.liked_by_me} className={popped ? "animate-heart-pop" : ""} />
             <span className="font-serif text-sm">{photo.likes_count}</span>
           </button>
-        </div>
-        {isMine && (
+
           <button
-            onClick={handleDelete}
-            disabled={deleting}
-            className="mt-2 text-xs text-dusty-rose/70 hover:text-dusty-rose underline disabled:opacity-40"
+            onClick={handleDownload}
+            disabled={downloading}
+            className="flex items-center gap-1.5 text-slate/40 hover:text-slate/70 disabled:opacity-40"
+            aria-label="Скачать оригинал"
           >
-            {deleting ? "Удаляем…" : "Удалить фото"}
+            <DownloadIcon />
           </button>
-        )}
+
+          {isMine && (
+            <button
+              onClick={handleDelete}
+              disabled={deleting}
+              className="ml-auto text-xs text-dusty-rose/70 hover:text-dusty-rose underline disabled:opacity-40"
+            >
+              {deleting ? "Удаляем…" : "Удалить"}
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
