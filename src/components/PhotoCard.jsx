@@ -3,12 +3,18 @@ import { Link } from "react-router-dom";
 import { publicPhotoUrl, supabase, PHOTOS_BUCKET } from "../lib/supabaseClient";
 import HeartIcon from "./HeartIcon";
 import DownloadIcon from "./DownloadIcon";
+import CommentIcon from "./CommentIcon";
+import LikersModal from "./LikersModal";
+import CommentsModal from "./CommentsModal";
 
 export default function PhotoCard({ photo, currentGuestId, eventCode, onLikeToggled, onDeleted }) {
   const [busy, setBusy] = useState(false);
   const [popped, setPopped] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [downloading, setDownloading] = useState(false);
+  const [showLikers, setShowLikers] = useState(false);
+  const [showComments, setShowComments] = useState(false);
+  const [commentsCount, setCommentsCount] = useState(photo.comments_count || 0);
   const isMine = photo.guest_id === currentGuestId;
 
   async function toggleLike() {
@@ -81,15 +87,13 @@ export default function PhotoCard({ photo, currentGuestId, eventCode, onLikeTogg
         />
       </div>
       <div className="px-3 py-2.5">
-        <div className="flex items-center justify-between gap-2">
-          <Link
-            to={`/event/${eventCode}/guest/${photo.guest_id}`}
-            className="min-w-0 text-xs text-slate/70 font-sans truncate hover:text-dusty-rose hover:underline"
-          >
-            {photo.guests?.full_name || "Гость"}
-            {isMine && <span className="text-sage"> · вы</span>}
-          </Link>
-        </div>
+        <Link
+          to={`/event/${eventCode}/guest/${photo.guest_id}`}
+          className="min-w-0 text-xs text-slate/70 font-sans truncate hover:text-dusty-rose hover:underline"
+        >
+          {photo.guests?.full_name || "Гость"}
+          {isMine && <span className="text-sage"> · вы</span>}
+        </Link>
 
         {photo.caption && (
           <p className="mt-1.5 text-sm text-slate/80 font-sans leading-snug break-words">
@@ -107,7 +111,21 @@ export default function PhotoCard({ photo, currentGuestId, eventCode, onLikeTogg
             aria-label="Поставить лайк"
           >
             <HeartIcon active={photo.liked_by_me} className={popped ? "animate-heart-pop" : ""} />
-            <span className="font-serif text-sm">{photo.likes_count}</span>
+          </button>
+          <button
+            onClick={() => setShowLikers(true)}
+            className="text-sm font-serif text-slate/70 hover:text-dusty-rose -ml-2"
+          >
+            {photo.likes_count}
+          </button>
+
+          <button
+            onClick={() => setShowComments(true)}
+            className="flex items-center gap-1.5 text-slate/40 hover:text-slate/70"
+            aria-label="Комментарии"
+          >
+            <CommentIcon />
+            <span className="text-sm font-serif">{commentsCount}</span>
           </button>
 
           <button
@@ -130,6 +148,16 @@ export default function PhotoCard({ photo, currentGuestId, eventCode, onLikeTogg
           )}
         </div>
       </div>
+
+      {showLikers && <LikersModal photoId={photo.id} onClose={() => setShowLikers(false)} />}
+      {showComments && (
+        <CommentsModal
+          photoId={photo.id}
+          currentGuestId={currentGuestId}
+          onClose={() => setShowComments(false)}
+          onCountChange={(delta) => setCommentsCount((prev) => Math.max(0, prev + delta))}
+        />
+      )}
     </div>
   );
 }
