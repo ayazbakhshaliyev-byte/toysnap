@@ -1,10 +1,12 @@
 import { useState } from "react";
-import { publicPhotoUrl, supabase } from "../lib/supabaseClient";
+import { Link } from "react-router-dom";
+import { publicPhotoUrl, supabase, PHOTOS_BUCKET } from "../lib/supabaseClient";
 import HeartIcon from "./HeartIcon";
 
-export default function PhotoCard({ photo, currentGuestId, onLikeToggled }) {
+export default function PhotoCard({ photo, currentGuestId, eventCode, onLikeToggled, onDeleted }) {
   const [busy, setBusy] = useState(false);
   const [popped, setPopped] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const isMine = photo.guest_id === currentGuestId;
 
   async function toggleLike() {
@@ -27,34 +29,62 @@ export default function PhotoCard({ photo, currentGuestId, onLikeToggled }) {
     }
   }
 
+  async function handleDelete() {
+    if (deleting) return;
+    if (!confirm("Удалить это фото? Отменить будет нельзя.")) return;
+    setDeleting(true);
+    try {
+      await supabase.storage
+        .from(PHOTOS_BUCKET)
+        .remove([photo.image_path, photo.thumbnail_path].filter(Boolean));
+      await supabase.from("photos").delete().eq("id", photo.id);
+      onDeleted?.(photo.id);
+    } catch (e) {
+      alert("Не получилось удалить фото. Попробуйте ещё раз.");
+      setDeleting(false);
+    }
+  }
+
   return (
-    <div className="photo-card bg-white rounded-lg border border-champagne shadow-soft hover:shadow-soft-hover hover:-translate-y-0.5 transition-all duration-300 overflow-hidden animate-fade-up">
-      <div className="aspect-square bg-warm-beige overflow-hidden">
+    <div className="photo-card break-inside-avoid mb-4 bg-white rounded-lg border border-champagne shadow-soft hover:shadow-soft-hover transition-all duration-300 overflow-hidden animate-fade-up">
+      <div className="bg-warm-beige overflow-hidden">
         <img
           src={publicPhotoUrl(photo.thumbnail_path) || publicPhotoUrl(photo.image_path)}
           alt={`Момент от ${photo.guests?.full_name || "гостя"}`}
           loading="lazy"
-          className="w-full h-full object-cover"
+          className="w-full h-auto block"
         />
       </div>
-      <div className="flex items-center justify-between px-3 py-2.5">
-        <div className="min-w-0">
-          <p className="text-xs text-slate/70 font-sans truncate">
+      <div className="px-3 py-2.5">
+        <div className="flex items-center justify-between gap-2">
+          <Link
+            to={`/event/${eventCode}/guest/${photo.guest_id}`}
+            className="min-w-0 text-xs text-slate/70 font-sans truncate hover:text-dusty-rose hover:underline"
+          >
             {photo.guests?.full_name || "Гость"}
             {isMine && <span className="text-sage"> · вы</span>}
-          </p>
+          </Link>
+          <button
+            onClick={toggleLike}
+            disabled={busy}
+            className={`flex items-center gap-1.5 shrink-0 ${
+              photo.liked_by_me ? "text-dusty-rose" : "text-slate/40"
+            }`}
+            aria-label="Поставить лайк"
+          >
+            <HeartIcon active={photo.liked_by_me} className={popped ? "animate-heart-pop" : ""} />
+            <span className="font-serif text-sm">{photo.likes_count}</span>
+          </button>
         </div>
-        <button
-          onClick={toggleLike}
-          disabled={busy}
-          className={`flex items-center gap-1.5 shrink-0 ${
-            photo.liked_by_me ? "text-dusty-rose" : "text-slate/40"
-          }`}
-          aria-label="Поставить лайк"
-        >
-          <HeartIcon active={photo.liked_by_me} className={popped ? "animate-heart-pop" : ""} />
-          <span className="font-serif text-sm">{photo.likes_count}</span>
-        </button>
+        {isMine && (
+          <button
+            onClick={handleDelete}
+            disabled={deleting}
+            className="mt-2 text-xs text-dusty-rose/70 hover:text-dusty-rose underline disabled:opacity-40"
+          >
+            {deleting ? "Удаляем…" : "Удалить фото"}
+          </button>
+        )}
       </div>
     </div>
   );
