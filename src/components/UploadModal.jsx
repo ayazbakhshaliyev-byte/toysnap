@@ -1,10 +1,12 @@
 import { useRef, useState } from "react";
 import { prepareImageForUpload, extensionForFile } from "../lib/imageUtils";
 import { supabase, PHOTOS_BUCKET } from "../lib/supabaseClient";
+import { useLanguage } from "../lib/i18n/LanguageContext";
 
 const CAPTION_LIMIT = 200;
 
 export default function UploadModal({ event, guest, onClose, onUploaded }) {
+  const { t } = useLanguage();
   const fileInputRef = useRef(null);
   const [preview, setPreview] = useState(null);
   const [file, setFile] = useState(null);
@@ -71,11 +73,7 @@ export default function UploadModal({ event, guest, onClose, onUploaded }) {
       setTimeout(onClose, 900);
     } catch (e) {
       setStatus("error");
-      setErrorMsg(
-        e.message?.includes("лимит")
-          ? "Вы достигли лимита в 30 фото за это событие."
-          : "Не получилось опубликовать фото. Проверьте связь и попробуйте снова."
-      );
+      setErrorMsg(e.message?.includes("лимит") ? t("upload.limitError") : t("upload.genericError"));
     }
   }
 
@@ -83,7 +81,7 @@ export default function UploadModal({ event, guest, onClose, onUploaded }) {
     <div className="fixed inset-0 bg-slate/40 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 p-0 sm:p-6">
       <div className="w-full sm:max-w-md bg-ivory rounded-t-2xl sm:rounded-2xl p-6 animate-fade-up max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-5">
-          <h2 className="font-serif italic text-2xl text-slate">Поделиться моментом</h2>
+          <h2 className="font-serif italic text-2xl text-slate">{t("upload.heading")}</h2>
           <button onClick={onClose} className="text-slate/40 text-2xl leading-none px-2">
             ×
           </button>
@@ -104,7 +102,7 @@ export default function UploadModal({ event, guest, onClose, onUploaded }) {
                        flex flex-col items-center justify-center gap-2 text-slate/60 font-sans"
           >
             <span className="text-3xl">✦</span>
-            <span>Сделать фото или выбрать из галереи</span>
+            <span>{t("upload.pickPrompt")}</span>
           </button>
         )}
 
@@ -118,7 +116,7 @@ export default function UploadModal({ event, guest, onClose, onUploaded }) {
               <textarea
                 value={caption}
                 onChange={(e) => setCaption(e.target.value.slice(0, CAPTION_LIMIT))}
-                placeholder="Подпись к фото (необязательно) — пожелание, момент, шутка…"
+                placeholder={t("upload.captionPlaceholder")}
                 rows={2}
                 className="w-full px-4 py-3 rounded-lg bg-warm-beige border border-champagne
                            font-sans text-sm text-slate placeholder:text-slate/40 resize-none
@@ -141,17 +139,17 @@ export default function UploadModal({ event, guest, onClose, onUploaded }) {
                 disabled={status === "processing" || status === "uploading"}
                 className="flex-1 h-14 rounded-lg border border-champagne text-slate font-sans"
               >
-                Заменить
+                {t("upload.replace")}
               </button>
               <button
                 onClick={handlePublish}
                 disabled={status === "processing" || status === "uploading" || status === "done"}
                 className="flex-1 h-14 rounded-lg bg-dusty-rose text-white font-sans disabled:opacity-50"
               >
-                {status === "processing" && "Готовим фото…"}
-                {status === "uploading" && "Публикуем…"}
-                {status === "done" && "Момент сохранён ✦"}
-                {(status === "idle" || status === "error") && "Опубликовать"}
+                {status === "processing" && t("upload.processing")}
+                {status === "uploading" && t("upload.uploading")}
+                {status === "done" && t("upload.done")}
+                {(status === "idle" || status === "error") && t("upload.publish")}
               </button>
             </div>
           </div>
