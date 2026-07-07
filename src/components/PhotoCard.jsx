@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { publicPhotoUrl, supabase, PHOTOS_BUCKET } from "../lib/supabaseClient";
+import { useLanguage } from "../lib/i18n/LanguageContext";
 import HeartIcon from "./HeartIcon";
 import DownloadIcon from "./DownloadIcon";
 import CommentIcon from "./CommentIcon";
@@ -8,6 +9,7 @@ import LikersModal from "./LikersModal";
 import CommentsModal from "./CommentsModal";
 
 export default function PhotoCard({ photo, currentGuestId, eventCode, onLikeToggled, onDeleted }) {
+  const { t } = useLanguage();
   const [busy, setBusy] = useState(false);
   const [popped, setPopped] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -16,6 +18,7 @@ export default function PhotoCard({ photo, currentGuestId, eventCode, onLikeTogg
   const [showComments, setShowComments] = useState(false);
   const [commentsCount, setCommentsCount] = useState(photo.comments_count || 0);
   const isMine = photo.guest_id === currentGuestId;
+  const authorName = photo.guests?.full_name || t("photoCard.guestFallback");
 
   async function toggleLike() {
     if (busy) return;
@@ -54,7 +57,7 @@ export default function PhotoCard({ photo, currentGuestId, eventCode, onLikeTogg
       link.remove();
       URL.revokeObjectURL(objectUrl);
     } catch (e) {
-      alert("Не получилось скачать фото. Попробуйте ещё раз.");
+      alert(t("photoCard.downloadError"));
     } finally {
       setDownloading(false);
     }
@@ -62,7 +65,7 @@ export default function PhotoCard({ photo, currentGuestId, eventCode, onLikeTogg
 
   async function handleDelete() {
     if (deleting) return;
-    if (!confirm("Удалить это фото? Отменить будет нельзя.")) return;
+    if (!confirm(t("photoCard.deleteConfirm"))) return;
     setDeleting(true);
     try {
       await supabase.storage
@@ -71,7 +74,7 @@ export default function PhotoCard({ photo, currentGuestId, eventCode, onLikeTogg
       await supabase.from("photos").delete().eq("id", photo.id);
       onDeleted?.(photo.id);
     } catch (e) {
-      alert("Не получилось удалить фото. Попробуйте ещё раз.");
+      alert(t("photoCard.deleteError"));
       setDeleting(false);
     }
   }
@@ -81,7 +84,7 @@ export default function PhotoCard({ photo, currentGuestId, eventCode, onLikeTogg
       <div className="bg-warm-beige overflow-hidden">
         <img
           src={publicPhotoUrl(photo.thumbnail_path) || publicPhotoUrl(photo.image_path)}
-          alt={`Момент от ${photo.guests?.full_name || "гостя"}`}
+          alt={authorName}
           loading="lazy"
           className="w-full h-auto block"
         />
@@ -91,8 +94,8 @@ export default function PhotoCard({ photo, currentGuestId, eventCode, onLikeTogg
           to={`/event/${eventCode}/guest/${photo.guest_id}`}
           className="min-w-0 text-xs text-slate/70 font-sans truncate hover:text-dusty-rose hover:underline"
         >
-          {photo.guests?.full_name || "Гость"}
-          {isMine && <span className="text-sage"> · вы</span>}
+          {authorName}
+          {isMine && <span className="text-sage"> · {t("photoCard.you")}</span>}
         </Link>
 
         {photo.caption && (
@@ -108,7 +111,7 @@ export default function PhotoCard({ photo, currentGuestId, eventCode, onLikeTogg
             className={`flex items-center gap-1.5 ${
               photo.liked_by_me ? "text-dusty-rose" : "text-slate/40"
             }`}
-            aria-label="Поставить лайк"
+            aria-label={t("photoCard.likeAria")}
           >
             <HeartIcon active={photo.liked_by_me} className={popped ? "animate-heart-pop" : ""} />
           </button>
@@ -122,7 +125,7 @@ export default function PhotoCard({ photo, currentGuestId, eventCode, onLikeTogg
           <button
             onClick={() => setShowComments(true)}
             className="flex items-center gap-1.5 text-slate/40 hover:text-slate/70"
-            aria-label="Комментарии"
+            aria-label={t("photoCard.commentAria")}
           >
             <CommentIcon />
             <span className="text-sm font-serif">{commentsCount}</span>
@@ -132,7 +135,7 @@ export default function PhotoCard({ photo, currentGuestId, eventCode, onLikeTogg
             onClick={handleDownload}
             disabled={downloading}
             className="flex items-center gap-1.5 text-slate/40 hover:text-slate/70 disabled:opacity-40"
-            aria-label="Скачать оригинал"
+            aria-label={t("photoCard.downloadAria")}
           >
             <DownloadIcon />
           </button>
@@ -143,7 +146,7 @@ export default function PhotoCard({ photo, currentGuestId, eventCode, onLikeTogg
               disabled={deleting}
               className="ml-auto text-xs text-dusty-rose/70 hover:text-dusty-rose underline disabled:opacity-40"
             >
-              {deleting ? "Удаляем…" : "Удалить"}
+              {deleting ? t("photoCard.deleting") : t("photoCard.delete")}
             </button>
           )}
         </div>
