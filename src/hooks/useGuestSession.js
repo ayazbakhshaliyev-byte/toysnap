@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 
+// error — это ключ перевода (например "eventGate.notFound"), а не готовый текст.
 export function useGuestSession(eventCode) {
   const [loading, setLoading] = useState(true);
   const [event, setEvent] = useState(null);
@@ -19,12 +20,12 @@ export function useGuestSession(eventCode) {
 
       if (eventErr) throw eventErr;
       if (!eventRow) {
-        setError("Событие не найдено. Проверьте ссылку из QR-кода.");
+        setError("eventGate.notFound");
         setLoading(false);
         return;
       }
       if (!eventRow.is_active) {
-        setError("Голосование для этого события завершено.");
+        setError("eventGate.inactive");
         setLoading(false);
         return;
       }
@@ -51,16 +52,14 @@ export function useGuestSession(eventCode) {
       if (guestErr) throw guestErr;
 
       if (guestRow && guestRow.event_id !== eventRow.id) {
-        setError(
-          "Этот браузер уже зарегистрирован на другом мероприятии. Откройте ссылку в другом браузере или в режиме инкогнито."
-        );
+        setError("eventGate.wrongEvent");
         setLoading(false);
         return;
       }
 
       setGuest(guestRow || null);
     } catch (e) {
-      setError(e.message || "Не удалось загрузить событие.");
+      setError("eventGate.generic");
     } finally {
       setLoading(false);
     }
