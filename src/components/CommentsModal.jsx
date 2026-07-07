@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 import { containsBlockedWords } from "../lib/textFilter";
+import { useLanguage } from "../lib/i18n/LanguageContext";
 
 const QUICK_EMOJI = ["❤️", "😍", "🥂", "😂", "🔥", "✨", "👏", "😭"];
 const COMMENT_LIMIT = 300;
 
 export default function CommentsModal({ photoId, currentGuestId, onClose, onCountChange }) {
+  const { t } = useLanguage();
   const [comments, setComments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [text, setText] = useState("");
@@ -31,11 +33,11 @@ export default function CommentsModal({ photoId, currentGuestId, onClose, onCoun
     const body = text.trim();
     if (!body || sending) return;
     if (body.length > COMMENT_LIMIT) {
-      setError("Слишком длинный комментарий");
+      setError(t("comments.tooLong"));
       return;
     }
     if (containsBlockedWords(body)) {
-      setError("Пожалуйста, будьте вежливы");
+      setError(t("comments.profanity"));
       return;
     }
     setSending(true);
@@ -51,14 +53,14 @@ export default function CommentsModal({ photoId, currentGuestId, onClose, onCoun
       setText("");
       onCountChange?.(1);
     } catch (e2) {
-      setError("Не получилось отправить, попробуйте ещё раз");
+      setError(t("comments.sendError"));
     } finally {
       setSending(false);
     }
   }
 
   async function handleDelete(comment) {
-    if (!confirm("Удалить комментарий?")) return;
+    if (!confirm(t("comments.deleteConfirm"))) return;
     await supabase.from("comments").delete().eq("id", comment.id);
     setComments((prev) => prev.filter((c) => c.id !== comment.id));
     onCountChange?.(-1);
@@ -74,7 +76,7 @@ export default function CommentsModal({ photoId, currentGuestId, onClose, onCoun
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-4 shrink-0">
-          <h2 className="font-serif italic text-xl text-slate">Комментарии</h2>
+          <h2 className="font-serif italic text-xl text-slate">{t("comments.title")}</h2>
           <button onClick={onClose} className="text-slate/40 text-2xl leading-none px-2">
             ×
           </button>
@@ -82,14 +84,16 @@ export default function CommentsModal({ photoId, currentGuestId, onClose, onCoun
 
         <div className="flex-1 overflow-y-auto space-y-3 mb-4 min-h-[100px]">
           {loading ? (
-            <p className="text-slate/40 font-sans text-sm">Загрузка…</p>
+            <p className="text-slate/40 font-sans text-sm">{t("comments.loading")}</p>
           ) : comments.length === 0 ? (
-            <p className="text-slate/50 font-sans text-sm">Пока нет комментариев — будьте первым.</p>
+            <p className="text-slate/50 font-sans text-sm">{t("comments.empty")}</p>
           ) : (
             comments.map((c) => (
               <div key={c.id} className="flex items-start justify-between gap-2">
                 <p className="text-sm font-sans text-slate/80 break-words">
-                  <span className="font-medium text-slate">{c.guests?.full_name || "Гость"}</span>{" "}
+                  <span className="font-medium text-slate">
+                    {c.guests?.full_name || t("photoCard.guestFallback")}
+                  </span>{" "}
                   {c.body}
                 </p>
                 {c.guest_id === currentGuestId && (
@@ -97,7 +101,7 @@ export default function CommentsModal({ photoId, currentGuestId, onClose, onCoun
                     onClick={() => handleDelete(c)}
                     className="text-xs text-dusty-rose/60 hover:text-dusty-rose shrink-0"
                   >
-                    удалить
+                    {t("comments.delete")}
                   </button>
                 )}
               </div>
@@ -126,7 +130,7 @@ export default function CommentsModal({ photoId, currentGuestId, onClose, onCoun
                 setText(e.target.value.slice(0, COMMENT_LIMIT));
                 if (error) setError(null);
               }}
-              placeholder="Написать комментарий…"
+              placeholder={t("comments.placeholder")}
               className="flex-1 h-12 px-3 rounded-lg bg-warm-beige border border-champagne
                          font-sans text-sm text-slate placeholder:text-slate/40
                          focus:outline-none focus:ring-2 focus:ring-dusty-rose/50 transition"
