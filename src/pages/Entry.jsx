@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { validateGuestName } from "../lib/nameValidation";
 import { useLanguage } from "../lib/i18n/LanguageContext";
+import { publicPhotoUrl } from "../lib/supabaseClient";
 import LanguageSwitcher from "../components/LanguageSwitcher";
 
 export default function Entry({ event, onSubmit }) {
@@ -10,6 +11,7 @@ export default function Entry({ event, onSubmit }) {
   const [error, setError] = useState(null);
 
   const canSubmit = name.trim().length >= 2 && !submitting;
+  const coverUrl = event?.cover_photo_path ? publicPhotoUrl(event.cover_photo_path) : null;
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -32,10 +34,27 @@ export default function Entry({ event, onSubmit }) {
   }
 
   return (
-    <div className="min-h-screen bg-ivory flex flex-col items-center justify-center px-6">
-      <div className="absolute top-4 right-4">
+    <div
+      className={`min-h-screen bg-ivory flex flex-col items-center px-6 ${
+        coverUrl ? "pt-6 pb-12" : "justify-center"
+      }`}
+    >
+      <div className="absolute top-4 right-4 z-10">
         <LanguageSwitcher />
       </div>
+
+      {coverUrl && (
+        <div className="w-full max-w-sm mb-8 animate-fade-up">
+          <div className="w-full h-[68vh] max-h-[640px] min-h-[380px] rounded-3xl overflow-hidden bg-warm-beige shadow-soft-hover">
+            <img
+              src={coverUrl}
+              alt={event?.title || ""}
+              className="w-full h-full object-cover"
+            />
+          </div>
+        </div>
+      )}
+
       <div className="w-full max-w-sm animate-fade-up">
         <p className="text-center text-sage tracking-[0.25em] text-xs uppercase mb-3">
           {event?.title}
