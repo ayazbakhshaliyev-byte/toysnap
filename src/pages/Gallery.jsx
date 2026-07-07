@@ -1,12 +1,15 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
+import { useLanguage } from "../lib/i18n/LanguageContext";
 import PhotoCard from "../components/PhotoCard";
 import UploadModal from "../components/UploadModal";
+import LanguageSwitcher from "../components/LanguageSwitcher";
 import { Link } from "react-router-dom";
 
 const PAGE_SIZE = 24;
 
 export default function Gallery({ event, guest }) {
+  const { t } = useLanguage();
   const [photos, setPhotos] = useState([]);
   const [likedIds, setLikedIds] = useState(new Set());
   const [sort, setSort] = useState("popular"); // popular | fresh
@@ -38,8 +41,6 @@ export default function Gallery({ event, guest }) {
     loadPhotos();
   }, [loadPhotos]);
 
-  // Реалтайм: новые фото и изменения счётчика лайков подхватываются
-  // автоматически, без перезагрузки страницы.
   useEffect(() => {
     const channel = supabase
       .channel(`event-${event.id}`)
@@ -88,16 +89,19 @@ export default function Gallery({ event, guest }) {
 
   return (
     <div className="min-h-screen bg-ivory pb-28">
-      <header className="pt-10 pb-6 px-6 text-center">
-        <p className="text-sage tracking-[0.25em] text-xs uppercase mb-2">Photo Vote</p>
+      <header className="pt-10 pb-6 px-6 text-center relative">
+        <div className="absolute top-4 left-4">
+          <LanguageSwitcher />
+        </div>
+        <p className="text-sage tracking-[0.25em] text-xs uppercase mb-2">{t("gallery.brand")}</p>
         <h1 className="font-serif italic text-3xl text-slate">{event.title}</h1>
         <p className="mt-3 text-slate/50 font-sans text-sm">——— ✦ ———</p>
       </header>
 
       <div className="flex justify-center gap-2 mb-6 px-6">
         {[
-          { key: "popular", label: "Популярные" },
-          { key: "fresh", label: "Свежие" },
+          { key: "popular", label: t("gallery.sortPopular") },
+          { key: "fresh", label: t("gallery.sortFresh") },
         ].map((opt) => (
           <button
             key={opt.key}
@@ -115,15 +119,13 @@ export default function Gallery({ event, guest }) {
 
       <main className="max-w-[1200px] mx-auto px-4">
         {loading ? (
-          <p className="text-center text-slate/40 font-sans py-16">Собираем моменты…</p>
+          <p className="text-center text-slate/40 font-sans py-16">{t("gallery.loading")}</p>
         ) : decorated.length === 0 ? (
           <div className="text-center py-16">
-            <p className="text-slate/50 font-sans">
-              Пока ни одного фото. Станьте первым, кто поделится моментом.
-            </p>
+            <p className="text-slate/50 font-sans">{t("gallery.empty")}</p>
           </div>
         ) : (
-<div className="columns-1 sm:columns-2 lg:columns-3 gap-4">
+          <div className="columns-1 sm:columns-2 lg:columns-3 gap-4">
             {decorated.map((photo) => (
               <PhotoCard
                 key={photo.id}
@@ -144,14 +146,14 @@ export default function Gallery({ event, guest }) {
             onClick={() => setShowUpload(true)}
             className="h-14 px-8 rounded-full bg-slate text-ivory font-sans tracking-wide shadow-soft-hover"
           >
-            Поделиться моментом →
+            {t("gallery.share")}
           </button>
         </div>
       </div>
 
       <div className="fixed top-4 right-4">
         <Link to={`/event/${event.code}/winner`} className="text-xs text-slate/40 font-sans underline">
-          Победитель
+          {t("gallery.winnerLink")}
         </Link>
       </div>
 
