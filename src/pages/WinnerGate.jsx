@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { supabase } from "../lib/supabaseClient";
+import { useLanguage } from "../lib/i18n/LanguageContext";
 import Winner from "./Winner";
 
 export default function WinnerGate() {
   const { code } = useParams();
+  const { t } = useLanguage();
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -20,7 +22,7 @@ export default function WinnerGate() {
   if (!event)
     return (
       <div className="min-h-screen bg-slate flex items-center justify-center">
-        <p className="text-champagne font-sans">Событие не найдено.</p>
+        <p className="text-champagne font-sans">{t("winnerGate.notFound")}</p>
       </div>
     );
 
