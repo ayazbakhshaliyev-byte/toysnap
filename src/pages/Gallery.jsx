@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { supabase } from "../lib/supabaseClient";
+import { supabase, publicPhotoUrl } from "../lib/supabaseClient";
 import { useLanguage } from "../lib/i18n/LanguageContext";
 import PhotoCard from "../components/PhotoCard";
 import UploadModal from "../components/UploadModal";
@@ -15,6 +15,7 @@ export default function Gallery({ event, guest }) {
   const [sort, setSort] = useState("popular"); // popular | fresh
   const [loading, setLoading] = useState(true);
   const [showUpload, setShowUpload] = useState(false);
+  const coverUrl = event?.cover_photo_path ? publicPhotoUrl(event.cover_photo_path) : null;
 
   const loadPhotos = useCallback(async () => {
     setLoading(true);
@@ -93,6 +94,13 @@ export default function Gallery({ event, guest }) {
         <div className="absolute top-4 left-4">
           <LanguageSwitcher />
         </div>
+
+        {coverUrl && (
+          <div className="mx-auto mb-4 w-24 h-32 sm:w-28 sm:h-36 rounded-2xl overflow-hidden bg-warm-beige shadow-soft">
+            <img src={coverUrl} alt={event.title} className="w-full h-full object-cover" />
+          </div>
+        )}
+
         <p className="text-sage tracking-[0.25em] text-xs uppercase mb-2">{t("gallery.brand")}</p>
         <h1 className="font-serif italic text-3xl text-slate">{event.title}</h1>
         <p className="mt-3 text-slate/50 font-sans text-sm">——— ✦ ———</p>
