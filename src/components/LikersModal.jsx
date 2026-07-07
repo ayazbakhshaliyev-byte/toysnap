@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
+import { useLanguage } from "../lib/i18n/LanguageContext";
 
 export default function LikersModal({ photoId, onClose }) {
+  const { t } = useLanguage();
   const [likers, setLikers] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -27,21 +29,21 @@ export default function LikersModal({ photoId, onClose }) {
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-4">
-          <h2 className="font-serif italic text-xl text-slate">Кому понравилось</h2>
+          <h2 className="font-serif italic text-xl text-slate">{t("likers.title")}</h2>
           <button onClick={onClose} className="text-slate/40 text-2xl leading-none px-2">
             ×
           </button>
         </div>
 
         {loading ? (
-          <p className="text-slate/40 font-sans text-sm">Загрузка…</p>
+          <p className="text-slate/40 font-sans text-sm">{t("likers.loading")}</p>
         ) : likers.length === 0 ? (
-          <p className="text-slate/50 font-sans text-sm">Пока никто не лайкнул.</p>
+          <p className="text-slate/50 font-sans text-sm">{t("likers.empty")}</p>
         ) : (
           <ul className="space-y-2">
             {likers.map((l) => (
               <li key={l.guest_id} className="text-sm text-slate font-sans">
-                {l.guests?.full_name || "Гость"}
+                {l.guests?.full_name || t("photoCard.guestFallback")}
               </li>
             ))}
           </ul>
