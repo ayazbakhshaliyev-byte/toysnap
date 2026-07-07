@@ -1,7 +1,10 @@
 import { useState } from "react";
 import { validateGuestName } from "../lib/nameValidation";
+import { useLanguage } from "../lib/i18n/LanguageContext";
+import LanguageSwitcher from "../components/LanguageSwitcher";
 
 export default function Entry({ event, onSubmit }) {
+  const { t } = useLanguage();
   const [name, setName] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
@@ -14,7 +17,7 @@ export default function Entry({ event, onSubmit }) {
 
     const check = validateGuestName(name);
     if (!check.valid) {
-      setError(check.reason);
+      setError(t(check.reason));
       return;
     }
 
@@ -23,28 +26,31 @@ export default function Entry({ event, onSubmit }) {
     try {
       await onSubmit(name.trim());
     } catch (err) {
-      setError("Не получилось сохранить имя. Попробуйте ещё раз.");
+      setError(t("entry.saveError"));
       setSubmitting(false);
     }
   }
 
   return (
     <div className="min-h-screen bg-ivory flex flex-col items-center justify-center px-6">
+      <div className="absolute top-4 right-4">
+        <LanguageSwitcher />
+      </div>
       <div className="w-full max-w-sm animate-fade-up">
         <p className="text-center text-sage tracking-[0.25em] text-xs uppercase mb-3">
           {event?.title}
         </p>
         <h1 className="font-serif italic text-4xl text-slate text-center mb-2">
-          Добро пожаловать ✦
+          {t("entry.title")}
         </h1>
         <p className="text-center text-slate/60 font-sans font-light text-sm mb-10">
-          Прежде чем войти в галерею — представьтесь
+          {t("entry.subtitle")}
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <label className="block text-xs uppercase tracking-wide text-slate/60 mb-2">
-              Ваше имя и фамилия
+              {t("entry.label")}
             </label>
             <input
               autoFocus
@@ -59,9 +65,7 @@ export default function Entry({ event, onSubmit }) {
                          font-sans text-slate placeholder:text-slate/30
                          focus:outline-none focus:ring-2 focus:ring-dusty-rose/50 transition"
             />
-            <p className="mt-2 text-xs text-slate/40 font-sans">
-              Только латиница (английские или азербайджанские буквы)
-            </p>
+            <p className="mt-2 text-xs text-slate/40 font-sans">{t("entry.helper")}</p>
           </div>
 
           {error && <p className="text-sm text-dusty-rose text-center">{error}</p>}
@@ -73,12 +77,10 @@ export default function Entry({ event, onSubmit }) {
                        disabled:opacity-40 disabled:cursor-not-allowed
                        hover:bg-[#c79494] transition-colors"
           >
-            {submitting ? "Входим…" : "Войти в галерею →"}
+            {submitting ? t("entry.submitting") : t("entry.submit")}
           </button>
 
-          <p className="text-center text-xs text-slate/40 font-sans">
-            Имя сохранится в этом браузере
-          </p>
+          <p className="text-center text-xs text-slate/40 font-sans">{t("entry.footer")}</p>
         </form>
       </div>
     </div>
