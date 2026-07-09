@@ -7,7 +7,16 @@ html, body, #root {
 }
 
 body {
-  background-color: #FDF8F5;
+  background-color: #ece0cc;
+}
+
+/* Тонкая точечная текстура бумаги — используется на Entry и в шапке Gallery */
+.paper-texture {
+  background-color: #ece0cc;
+  background-image: radial-gradient(rgba(169, 133, 63, 0.06) 1px, transparent 1.6px),
+    radial-gradient(rgba(169, 133, 63, 0.045) 1px, transparent 1.6px);
+  background-size: 24px 24px, 24px 24px;
+  background-position: 0 0, 12px 12px;
 }
 
 /* Уважаем настройки пользователя по анимациям */
