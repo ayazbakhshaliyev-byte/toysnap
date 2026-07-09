@@ -1,9 +1,9 @@
-export default function HeartIcon({ active, className = "" }) {
+export default function HeartIcon({ active, size = 22, className = "" }) {
   return (
     <svg
       viewBox="0 0 24 24"
-      width="22"
-      height="22"
+      width={size}
+      height={size}
       className={className}
       fill={active ? "currentColor" : "none"}
       stroke="currentColor"
