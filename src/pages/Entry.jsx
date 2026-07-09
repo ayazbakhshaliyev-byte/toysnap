@@ -13,7 +13,7 @@ export default function Entry({ event, onSubmit }) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
 
-  const canSubmit = name.trim().length >= 2 && !submitting;
+  const canSubmit = name.trim().split(/\s+/).filter(Boolean).length >= 2 && !submitting;
   const coverUrl = event?.cover_photo_path ? publicPhotoUrl(event.cover_photo_path) : null;
 
   const showCoupleNames = hasCoupleNames(event);
