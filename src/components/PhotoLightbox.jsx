@@ -175,7 +175,8 @@ export default function PhotoLightbox({
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-noir flex flex-col animate-fade-up">
+    <div className="fixed inset-0 z-50 bg-ink/85 flex flex-col sm:items-center sm:justify-center sm:p-6 animate-fade-up">
+      <div className="w-full h-full sm:h-auto sm:max-h-[90vh] sm:max-w-[460px] sm:rounded-md sm:overflow-hidden sm:shadow-soft-hover bg-noir flex flex-col">
       <div className="flex-none flex items-center justify-between px-4 py-3.5">
         <button
           onClick={onClose}
@@ -214,16 +215,15 @@ export default function PhotoLightbox({
         </div>
       </div>
 
-      <div className="flex-none bg-noir-deep flex items-center justify-center max-h-[44%] overflow-hidden">
+      <div className="flex-none bg-noir-deep flex items-center justify-center overflow-hidden">
         <img
           src={publicPhotoUrl(photo.image_path)}
           alt={authorName}
-          className="max-w-full object-contain"
-          style={{ maxHeight: "340px" }}
+          className="max-w-full max-h-[42vh] sm:max-h-[380px] object-contain"
         />
       </div>
 
-      <div className="flex-1 overflow-y-auto bg-sheet">
+      <div className="flex-1 overflow-y-auto bg-sheet min-h-0">
         <div className="px-5 pt-4.5 pb-3 border-b border-gold/25">
           <Link to={`/event/${eventCode}/guest/${photo.guest_id}`} onClick={onClose} className="flex items-center gap-2.5">
             <span className="flex-none w-[38px] h-[38px] rounded-full border border-gold flex items-center justify-center bg-white">
@@ -332,6 +332,7 @@ export default function PhotoLightbox({
           {text.length}/{COMMENT_LIMIT}
         </div>
       </form>
+    </div>
     </div>
   );
 }
