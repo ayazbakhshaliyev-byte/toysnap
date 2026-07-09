@@ -6,12 +6,15 @@ export const LANGUAGES = [
 
 export const DEFAULT_LANGUAGE = "az";
 
+// Названия месяцев для форматирования даты события (родительный падеж для RU, как того требует "12 июня")
 const MONTHS = {
   az: ["Yanvar", "Fevral", "Mart", "Aprel", "May", "İyun", "İyul", "Avqust", "Sentyabr", "Oktyabr", "Noyabr", "Dekabr"],
   ru: ["января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа", "сентября", "октября", "ноября", "декабря"],
   en: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
 };
 
+// event.wedding_date — обычная дата ("2026-06-14"), city — уже локализованное название города из БД.
+// Собираем строку вида "14 İyun 2026 · Bakı" под нужный язык.
 export function formatEventDate(dateStr, lang, city) {
   const months = MONTHS[lang] || MONTHS.az;
   let datePart = "";
@@ -100,6 +103,7 @@ const translations = {
       commentAria: "Şərhlər",
       downloadAria: "Orijinalı yüklə",
       download: "Yüklə",
+      close: "Bağla",
       deleteConfirm: "Bu foto silinsin? Geri qaytarmaq mümkün olmayacaq.",
       deleting: "Silinir…",
       delete: "Sil",
@@ -202,6 +206,7 @@ const translations = {
       commentAria: "Комментарии",
       downloadAria: "Скачать оригинал",
       download: "Скачать",
+      close: "Закрыть",
       deleteConfirm: "Удалить это фото? Отменить будет нельзя.",
       deleting: "Удаляем…",
       delete: "Удалить",
@@ -304,6 +309,7 @@ const translations = {
       commentAria: "Comments",
       downloadAria: "Download original",
       download: "Download",
+      close: "Close",
       deleteConfirm: "Delete this photo? This can't be undone.",
       deleting: "Deleting…",
       delete: "Delete",
