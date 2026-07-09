@@ -37,7 +37,7 @@ export default function PhotoLightbox({
       setLoading(true);
       const { data: commentRows } = await supabase
         .from("comments")
-        .select("*, guests(full_name), comment_likes(count)")
+        .select("*, guests!guest_id(full_name), comment_likes(count)")
         .eq("photo_id", photo.id)
         .order("created_at", { ascending: true });
 
@@ -115,7 +115,7 @@ export default function PhotoLightbox({
       const { data, error: insertErr } = await supabase
         .from("comments")
         .insert({ photo_id: photo.id, guest_id: currentGuestId, body })
-        .select("*, guests(full_name)")
+        .select("*, guests!guest_id(full_name)")
         .single();
       if (insertErr) throw insertErr;
       setComments((prev) => [...prev, { ...data, likes_count: 0 }]);
