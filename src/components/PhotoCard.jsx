@@ -1,21 +1,18 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { publicPhotoUrl, supabase, PHOTOS_BUCKET } from "../lib/supabaseClient";
+import { publicPhotoUrl, supabase } from "../lib/supabaseClient";
 import { useLanguage } from "../lib/i18n/LanguageContext";
 import HeartIcon from "./HeartIcon";
-import DownloadIcon from "./DownloadIcon";
 import CommentIcon from "./CommentIcon";
 import LikersModal from "./LikersModal";
-import CommentsModal from "./CommentsModal";
+import PhotoLightbox from "./PhotoLightbox";
 
 export default function PhotoCard({ photo, currentGuestId, eventCode, onLikeToggled, onDeleted }) {
   const { t } = useLanguage();
   const [busy, setBusy] = useState(false);
   const [popped, setPopped] = useState(false);
-  const [deleting, setDeleting] = useState(false);
-  const [downloading, setDownloading] = useState(false);
   const [showLikers, setShowLikers] = useState(false);
-  const [showComments, setShowComments] = useState(false);
+  const [showLightbox, setShowLightbox] = useState(false);
   const [commentsCount, setCommentsCount] = useState(photo.comments_count || 0);
   const isMine = photo.guest_id === currentGuestId;
   const authorName = photo.guests?.full_name || t("photoCard.guestFallback");
@@ -40,55 +37,21 @@ export default function PhotoCard({ photo, currentGuestId, eventCode, onLikeTogg
     }
   }
 
-  async function handleDownload() {
-    if (downloading) return;
-    setDownloading(true);
-    try {
-      const url = publicPhotoUrl(photo.original_path || photo.image_path);
-      const response = await fetch(url);
-      const blob = await response.blob();
-      const objectUrl = URL.createObjectURL(blob);
-      const ext = (photo.original_path || photo.image_path || "").split(".").pop() || "jpg";
-      const link = document.createElement("a");
-      link.href = objectUrl;
-      link.download = `toysnap-${photo.id.slice(0, 8)}.${ext}`;
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      URL.revokeObjectURL(objectUrl);
-    } catch (e) {
-      alert(t("photoCard.downloadError"));
-    } finally {
-      setDownloading(false);
-    }
-  }
-
-  async function handleDelete() {
-    if (deleting) return;
-    if (!confirm(t("photoCard.deleteConfirm"))) return;
-    setDeleting(true);
-    try {
-      await supabase.storage
-        .from(PHOTOS_BUCKET)
-        .remove([photo.image_path, photo.thumbnail_path, photo.original_path].filter(Boolean));
-      await supabase.from("photos").delete().eq("id", photo.id);
-      onDeleted?.(photo.id);
-    } catch (e) {
-      alert(t("photoCard.deleteError"));
-      setDeleting(false);
-    }
-  }
-
   return (
     <div className="break-inside-avoid mb-3 bg-paper border border-gold/45 animate-fade-up">
-      <div className="bg-champagne/40 overflow-hidden">
+      <button
+        type="button"
+        onClick={() => setShowLightbox(true)}
+        className="block w-full bg-champagne/40 overflow-hidden"
+      >
         <img
           src={publicPhotoUrl(photo.thumbnail_path) || publicPhotoUrl(photo.image_path)}
           alt={authorName}
           loading="lazy"
           className="w-full h-auto block"
         />
-      </div>
+      </button>
+
       <div className="px-2.5 py-2.5">
         <Link
           to={`/event/${eventCode}/guest/${photo.guest_id}`}
@@ -121,42 +84,31 @@ export default function PhotoCard({ photo, currentGuestId, eventCode, onLikeTogg
           </button>
 
           <button
-            onClick={() => setShowComments(true)}
+            onClick={() => setShowLightbox(true)}
             className="flex items-center gap-1.5 text-dim hover:text-gold transition-colors"
             aria-label={t("photoCard.commentAria")}
           >
             <CommentIcon />
             <span className="font-sans text-[11px] font-semibold">{commentsCount}</span>
           </button>
-
-          <button
-            onClick={handleDownload}
-            disabled={downloading}
-            className="flex text-dim hover:text-gold transition-colors disabled:opacity-40"
-            aria-label={t("photoCard.downloadAria")}
-          >
-            <DownloadIcon />
-          </button>
-
-          {isMine && (
-            <button
-              onClick={handleDelete}
-              disabled={deleting}
-              className="ml-auto font-sans text-[9px] font-semibold tracking-[0.14em] uppercase text-blush/80 hover:text-blush disabled:opacity-40"
-            >
-              {deleting ? t("photoCard.deleting") : t("photoCard.delete")}
-            </button>
-          )}
         </div>
       </div>
 
-      {showLikers && <LikersModal photoId={photo.id} onClose={() => setShowLikers(false)} />}
-      {showComments && (
-        <CommentsModal
-          photoId={photo.id}
+      {showLikers && (
+        <LikersModal photoId={photo.id} eventCode={eventCode} onClose={() => setShowLikers(false)} />
+      )}
+      {showLightbox && (
+        <PhotoLightbox
+          photo={photo}
           currentGuestId={currentGuestId}
-          onClose={() => setShowComments(false)}
-          onCountChange={(delta) => setCommentsCount((prev) => Math.max(0, prev + delta))}
+          eventCode={eventCode}
+          onClose={() => setShowLightbox(false)}
+          onLikeToggled={onLikeToggled}
+          onDeleted={(id) => {
+            onDeleted?.(id);
+            setShowLightbox(false);
+          }}
+          onCommentCountChange={(delta) => setCommentsCount((prev) => Math.max(0, prev + delta))}
         />
       )}
     </div>
