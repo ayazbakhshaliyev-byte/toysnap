@@ -18,11 +18,11 @@ export default function WinnerGate() {
     })();
   }, [code]);
 
-  if (loading) return <div className="min-h-screen bg-slate" />;
+  if (loading) return <div className="min-h-screen bg-noir" />;
   if (!event)
     return (
-      <div className="min-h-screen bg-slate flex items-center justify-center">
-        <p className="text-champagne font-sans">{t("winnerGate.notFound")}</p>
+      <div className="min-h-screen bg-noir flex items-center justify-center">
+        <p className="font-sans text-paper/70">{t("winnerGate.notFound")}</p>
       </div>
     );
 
