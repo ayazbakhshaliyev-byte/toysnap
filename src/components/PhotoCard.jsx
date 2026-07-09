@@ -51,7 +51,7 @@ export default function PhotoCard({ photo, currentGuestId, eventCode, onLikeTogg
       const ext = (photo.original_path || photo.image_path || "").split(".").pop() || "jpg";
       const link = document.createElement("a");
       link.href = objectUrl;
-      link.download = `photo-vote-${photo.id.slice(0, 8)}.${ext}`;
+      link.download = `toysnap-${photo.id.slice(0, 8)}.${ext}`;
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -80,8 +80,8 @@ export default function PhotoCard({ photo, currentGuestId, eventCode, onLikeTogg
   }
 
   return (
-    <div className="photo-card break-inside-avoid mb-4 bg-white rounded-lg border border-champagne shadow-soft hover:shadow-soft-hover transition-all duration-300 overflow-hidden animate-fade-up">
-      <div className="bg-warm-beige overflow-hidden">
+    <div className="break-inside-avoid mb-3 bg-paper border border-gold/45 animate-fade-up">
+      <div className="bg-champagne/40 overflow-hidden">
         <img
           src={publicPhotoUrl(photo.thumbnail_path) || publicPhotoUrl(photo.image_path)}
           alt={authorName}
@@ -89,52 +89,50 @@ export default function PhotoCard({ photo, currentGuestId, eventCode, onLikeTogg
           className="w-full h-auto block"
         />
       </div>
-      <div className="px-3 py-2.5">
+      <div className="px-2.5 py-2.5">
         <Link
           to={`/event/${eventCode}/guest/${photo.guest_id}`}
-          className="min-w-0 text-xs text-slate/70 font-sans truncate hover:text-dusty-rose hover:underline"
+          className="block min-w-0 font-serif italic text-[15px] text-ink truncate hover:text-gold transition-colors"
         >
           {authorName}
-          {isMine && <span className="text-sage"> · {t("photoCard.you")}</span>}
+          {isMine && <span className="text-gold/80 not-italic text-xs"> · {t("photoCard.you")}</span>}
         </Link>
 
         {photo.caption && (
-          <p className="mt-1.5 text-sm text-slate/80 font-sans leading-snug break-words">
+          <p className="mt-1 font-serif italic text-[13px] leading-snug text-dim break-words">
             {photo.caption}
           </p>
         )}
 
-        <div className="mt-2.5 flex items-center gap-4">
+        <div className="mt-2 flex items-center gap-3.5">
           <button
             onClick={toggleLike}
             disabled={busy}
-            className={`flex items-center gap-1.5 ${
-              photo.liked_by_me ? "text-dusty-rose" : "text-slate/40"
-            }`}
+            className={photo.liked_by_me ? "flex text-blush" : "flex text-ink-soft"}
             aria-label={t("photoCard.likeAria")}
           >
             <HeartIcon active={photo.liked_by_me} className={popped ? "animate-heart-pop" : ""} />
           </button>
           <button
             onClick={() => setShowLikers(true)}
-            className="text-sm font-serif text-slate/70 hover:text-dusty-rose -ml-2"
+            className="font-sans text-[11px] font-semibold text-ink-soft hover:text-gold transition-colors -ml-2"
           >
             {photo.likes_count}
           </button>
 
           <button
             onClick={() => setShowComments(true)}
-            className="flex items-center gap-1.5 text-slate/40 hover:text-slate/70"
+            className="flex items-center gap-1.5 text-dim hover:text-gold transition-colors"
             aria-label={t("photoCard.commentAria")}
           >
             <CommentIcon />
-            <span className="text-sm font-serif">{commentsCount}</span>
+            <span className="font-sans text-[11px] font-semibold">{commentsCount}</span>
           </button>
 
           <button
             onClick={handleDownload}
             disabled={downloading}
-            className="flex items-center gap-1.5 text-slate/40 hover:text-slate/70 disabled:opacity-40"
+            className="flex text-dim hover:text-gold transition-colors disabled:opacity-40"
             aria-label={t("photoCard.downloadAria")}
           >
             <DownloadIcon />
@@ -144,7 +142,7 @@ export default function PhotoCard({ photo, currentGuestId, eventCode, onLikeTogg
             <button
               onClick={handleDelete}
               disabled={deleting}
-              className="ml-auto text-xs text-dusty-rose/70 hover:text-dusty-rose underline disabled:opacity-40"
+              className="ml-auto font-sans text-[9px] font-semibold tracking-[0.14em] uppercase text-blush/80 hover:text-blush disabled:opacity-40"
             >
               {deleting ? t("photoCard.deleting") : t("photoCard.delete")}
             </button>
