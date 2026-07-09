@@ -82,17 +82,18 @@ export default function UploadModal({ event, guest, onClose, onUploaded }) {
   }
 
   return (
-    <div
-      className="fixed inset-0 bg-ink/45 flex items-end justify-center z-50 animate-fade-up"
-      onClick={preview ? undefined : onClose}
-    >
+    <>
       <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleFileChange} />
       <input ref={galleryInputRef} type="file" accept="image/*,.heic,.heif" className="hidden" onChange={handleFileChange} />
 
       <div
-        className="w-full max-h-[88%] flex flex-col bg-sheet rounded-t-[22px] shadow-soft-hover overflow-y-auto"
-        onClick={(e) => e.stopPropagation()}
+        className="fixed inset-0 bg-ink/45 flex items-end justify-center z-50 animate-fade-up"
+        onClick={preview ? undefined : onClose}
       >
+        <div
+          className="w-full max-h-[88%] flex flex-col bg-sheet rounded-t-[22px] shadow-soft-hover overflow-y-auto"
+          onClick={(e) => e.stopPropagation()}
+        >
         <div className="flex-none px-5 pt-4 pb-4 border-b border-gold/25">
           <div className="w-[42px] h-1 rounded-full bg-gold/40 mx-auto mb-4" />
           <div className="flex items-center justify-between">
@@ -187,7 +188,8 @@ export default function UploadModal({ event, guest, onClose, onUploaded }) {
             </div>
           </div>
         )}
+        </div>
       </div>
-    </div>
+    </>
   );
 }
