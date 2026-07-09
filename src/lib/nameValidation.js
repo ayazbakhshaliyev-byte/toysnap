@@ -16,6 +16,10 @@ export function validateGuestName(rawName) {
   if (!ALLOWED_NAME_PATTERN.test(name)) {
     return { valid: false, reason: "errors.invalidChars" };
   }
+  const wordCount = name.split(/\s+/).filter(Boolean).length;
+  if (wordCount < 2) {
+    return { valid: false, reason: "errors.needFullName" };
+  }
   if (containsBlockedWords(name)) {
     return { valid: false, reason: "errors.profanity" };
   }
