@@ -311,4 +311,41 @@ const translations = {
       likeAria: "Like",
       commentAria: "Comments",
       downloadAria: "Download original",
-      download:
+      download: "Download",
+      close: "Close",
+      deleteConfirm: "Delete this photo? This can't be undone.",
+      deleting: "Deleting…",
+      delete: "Delete",
+      downloadError: "Couldn't download the photo. Please try again.",
+      deleteError: "Couldn't delete the photo. Please try again.",
+    },
+    likers: {
+      title: "Liked by",
+      loading: "Loading…",
+      empty: "No likes yet.",
+      andOne: "and 1 other",
+      andMany: "and # others",
+    },
+    comments: {
+      title: "Comments",
+      loading: "Loading…",
+      empty: "No comments yet",
+      placeholder: "Add a comment…",
+      send: "Send",
+      likeAria: "Like",
+      delete: "delete",
+      deleteConfirm: "Delete this comment?",
+      tooLong: "Comment is too long",
+      profanity: "Please be respectful",
+      sendError: "Couldn't send, please try again",
+    },
+  },
+};
+
+export function getTranslator(lang) {
+  const dict = translations[lang] || translations[DEFAULT_LANGUAGE];
+  return function t(path) {
+    const value = path.split(".").reduce((acc, key) => (acc ? acc[key] : undefined), dict);
+    return value ?? path;
+  };
+}
