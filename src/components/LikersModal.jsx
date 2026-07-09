@@ -1,54 +1,15 @@
-import { useEffect, useState } from "react";
-import { supabase } from "../lib/supabaseClient";
-import { useLanguage } from "../lib/i18n/LanguageContext";
-
-export default function LikersModal({ photoId, onClose }) {
-  const { t } = useLanguage();
-  const [likers, setLikers] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    (async () => {
-      const { data } = await supabase
-        .from("likes")
-        .select("guest_id, created_at, guests(full_name)")
-        .eq("photo_id", photoId)
-        .order("created_at", { ascending: false });
-      setLikers(data || []);
-      setLoading(false);
-    })();
-  }, [photoId]);
-
+export default function HeartIcon({ active, size = 22, className = "" }) {
   return (
-    <div
-      className="fixed inset-0 bg-slate/40 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 p-0 sm:p-6"
-      onClick={onClose}
+    <svg
+      viewBox="0 0 24 24"
+      width={size}
+      height={size}
+      className={className}
+      fill={active ? "currentColor" : "none"}
+      stroke="currentColor"
+      strokeWidth="1.5"
     >
-      <div
-        className="w-full sm:max-w-sm bg-ivory rounded-t-2xl sm:rounded-2xl p-6 animate-fade-up max-h-[70vh] overflow-y-auto"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="font-serif italic text-xl text-slate">{t("likers.title")}</h2>
-          <button onClick={onClose} className="text-slate/40 text-2xl leading-none px-2">
-            ×
-          </button>
-        </div>
-
-        {loading ? (
-          <p className="text-slate/40 font-sans text-sm">{t("likers.loading")}</p>
-        ) : likers.length === 0 ? (
-          <p className="text-slate/50 font-sans text-sm">{t("likers.empty")}</p>
-        ) : (
-          <ul className="space-y-2">
-            {likers.map((l) => (
-              <li key={l.guest_id} className="text-sm text-slate font-sans">
-                {l.guests?.full_name || t("photoCard.guestFallback")}
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-    </div>
+      <path d="M12 20.5s-7.5-4.6-10-9.3C0.3 8.1 1.6 4.8 4.8 4C7 3.4 9.3 4.3 12 7c2.7-2.7 5-3.6 7.2-3C22.4 4.8 23.7 8.1 22 11.2c-2.5 4.7-10 9.3-10 9.3z" />
+    </svg>
   );
 }
