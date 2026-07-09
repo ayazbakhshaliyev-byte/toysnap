@@ -38,59 +38,61 @@ export default function PhotoCard({ photo, currentGuestId, eventCode, onLikeTogg
   }
 
   return (
-    <div className="break-inside-avoid mb-3 bg-paper border border-gold/45 animate-fade-up">
-      <button
-        type="button"
-        onClick={() => setShowLightbox(true)}
-        className="block w-full bg-champagne/40 overflow-hidden"
-      >
-        <img
-          src={publicPhotoUrl(photo.thumbnail_path) || publicPhotoUrl(photo.image_path)}
-          alt={authorName}
-          loading="lazy"
-          className="w-full h-auto block"
-        />
-      </button>
-
-      <div className="px-2.5 py-2.5">
-        <Link
-          to={`/event/${eventCode}/guest/${photo.guest_id}`}
-          className="block min-w-0 font-serif italic text-[15px] text-ink truncate hover:text-gold transition-colors"
+    <>
+      <div className="break-inside-avoid mb-3 bg-paper border border-gold/45 animate-fade-up">
+        <button
+          type="button"
+          onClick={() => setShowLightbox(true)}
+          className="block w-full bg-champagne/40 overflow-hidden"
         >
-          {authorName}
-          {isMine && <span className="text-gold/80 not-italic text-xs"> · {t("photoCard.you")}</span>}
-        </Link>
+          <img
+            src={publicPhotoUrl(photo.thumbnail_path) || publicPhotoUrl(photo.image_path)}
+            alt={authorName}
+            loading="lazy"
+            className="w-full h-auto block"
+          />
+        </button>
 
-        {photo.caption && (
-          <p className="mt-1 font-serif italic text-[13px] leading-snug text-dim break-words">
-            {photo.caption}
-          </p>
-        )}
+        <div className="px-2.5 py-2.5">
+          <Link
+            to={`/event/${eventCode}/guest/${photo.guest_id}`}
+            className="block min-w-0 font-serif italic text-[15px] text-ink truncate hover:text-gold transition-colors"
+          >
+            {authorName}
+            {isMine && <span className="text-gold/80 not-italic text-xs"> · {t("photoCard.you")}</span>}
+          </Link>
 
-        <div className="mt-2 flex items-center gap-3.5">
-          <button
-            onClick={toggleLike}
-            disabled={busy}
-            className={photo.liked_by_me ? "flex text-blush" : "flex text-ink-soft"}
-            aria-label={t("photoCard.likeAria")}
-          >
-            <HeartIcon active={photo.liked_by_me} className={popped ? "animate-heart-pop" : ""} />
-          </button>
-          <button
-            onClick={() => setShowLikers(true)}
-            className="font-sans text-[11px] font-semibold text-ink-soft hover:text-gold transition-colors -ml-2"
-          >
-            {photo.likes_count}
-          </button>
+          {photo.caption && (
+            <p className="mt-1 font-serif italic text-[13px] leading-snug text-dim break-words">
+              {photo.caption}
+            </p>
+          )}
 
-          <button
-            onClick={() => setShowLightbox(true)}
-            className="flex items-center gap-1.5 text-dim hover:text-gold transition-colors"
-            aria-label={t("photoCard.commentAria")}
-          >
-            <CommentIcon />
-            <span className="font-sans text-[11px] font-semibold">{commentsCount}</span>
-          </button>
+          <div className="mt-2 flex items-center gap-3.5">
+            <button
+              onClick={toggleLike}
+              disabled={busy}
+              className={photo.liked_by_me ? "flex text-blush" : "flex text-ink-soft"}
+              aria-label={t("photoCard.likeAria")}
+            >
+              <HeartIcon active={photo.liked_by_me} className={popped ? "animate-heart-pop" : ""} />
+            </button>
+            <button
+              onClick={() => setShowLikers(true)}
+              className="font-sans text-[11px] font-semibold text-ink-soft hover:text-gold transition-colors -ml-2"
+            >
+              {photo.likes_count}
+            </button>
+
+            <button
+              onClick={() => setShowLightbox(true)}
+              className="flex items-center gap-1.5 text-dim hover:text-gold transition-colors"
+              aria-label={t("photoCard.commentAria")}
+            >
+              <CommentIcon />
+              <span className="font-sans text-[11px] font-semibold">{commentsCount}</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -111,6 +113,6 @@ export default function PhotoCard({ photo, currentGuestId, eventCode, onLikeTogg
           onCommentCountChange={(delta) => setCommentsCount((prev) => Math.max(0, prev + delta))}
         />
       )}
-    </div>
+    </>
   );
 }
